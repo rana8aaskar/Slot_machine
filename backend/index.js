@@ -37,13 +37,14 @@ const deposit = (amount) => {
 const spin = (lines) => {
     const reels = [];
     const symbols = [];
-    
+
+    // Build the symbols array based on SYMBOL_COUNT
     for (const [symbol, count] of Object.entries(SYMBOL_COUNT)) {
         for (let i = 0; i < count; i++) {
             symbols.push(symbol);
         }
     }
-    
+
     // Generate 3 reels
     for (let i = 0; i < 3; i++) {
         reels.push([]);
@@ -55,27 +56,25 @@ const spin = (lines) => {
         }
     }
 
-    const winnings = calculateWinnings(reels, lines);
-    return { reels, winnings };
+    return reels; // Return only the reels
 };
 
 // Calculate winnings based on matched rows
 const calculateWinnings = (rows, bet, lines) => {
     let winnings = 0;
-    
+
     for (let i = 0; i < lines; i++) {
         if (i < rows.length) { // Ensure we don't go out of bounds
             const row = rows[i]; // Get the row for the current line
             const firstSymbol = row[0];
             const allSame = row.every(symbol => symbol === firstSymbol);
             if (allSame) {
-                winnings += bet * SYMBOL_VALUE[firstSymbol];
+                winnings += bet * SYMBOL_VALUE[firstSymbol]; // Calculate winnings
             }
         }
     }
     return winnings;
 };
-
 
 // API Endpoints
 
@@ -97,9 +96,9 @@ app.post("/spin", (req, res) => {
         return res.status(400).json({ error: "Insufficient balance" });
     }
 
-    const reels = spin(lines);
+    const reels = spin(lines); // Get the reels
     const rows = reels[0].map((_, index) => reels.map(reel => reel[index])); // Convert reels to rows
-    const winnings = calculateWinnings(rows, bet, lines); // Pass lines to calculate winnings
+    const winnings = calculateWinnings(rows, bet, lines); // Calculate winnings based on rows
     balance += winnings - bet; // Deduct bet, then add winnings
 
     res.status(200).json({ reels, winnings, balance });
